@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Padel Session Tracker</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="script.js"></script>
+  </head>
+  <body>
+    <header>🏓 Padel Session Tracker</header>
+
+    <!-- Navigation Tabs -->
+    <nav class="main-nav">
+      <button onclick="navigateTo('home')" class="nav-tab active" id="nav-home">🏠 Dashboard</button>
+      <button onclick="navigateTo('session')" class="nav-tab" id="nav-session">🎮 Active Session</button>
+    </nav>
+
+    <main>
+      <section id="home">
+        <div class="section-header">
+          <h2>Players & Statistics</h2>
+          <button onclick="navigateTo('session')" class="primary-btn">Start New Session</button>
+        </div>
+        
+        <div class="content-grid">
+          <div class="players-section">
+            <h3>All Players</h3>
+            <div id="player-list" class="grid"></div>
+          </div>
+          
+          <div class="leaderboard-section">
+            <h3>All-Time Leaderboard</h3>
+            <div id="leaderboard-list" class="grid"></div>
+          </div>
+        </div>
+
+        <div class="duos-section">
+          <h3>Best Duos (All-Time)</h3>
+          <div id="duos-table" class="table-container"></div>
+        </div>
+      </section>
+
+      <section id="session" class="hidden">
+        <div class="session-header">
+          <div class="session-title">
+            <h2>Active Session</h2>
+            <div class="session-meta">
+              <span class="session-stat">Games: <strong id="session-games">0</strong></span>
+              <span class="session-stat">Players: <strong id="session-players-count">0</strong></span>
+            </div>
+          </div>
+          <div class="session-controls">
+            <button onclick="resetSession()" class="warning-btn">🔄 Reset Session</button>
+            <button onclick="endSession()" class="danger-btn">⏹️ End Session</button>
+          </div>
+        </div>
+
+        <div class="session-content">
+          <div class="session-players-section">
+            <h3>Session Players</h3>
+            <div class="add-player-section">
+              <div class="add-new-player">
+                <input type="text" id="player-name" placeholder="New player name" />
+                <button onclick="addPlayer()" class="success-btn">Add New Player</button>
+              </div>
+              <div class="add-existing-player">
+                <select id="player-select" class="player-dropdown">
+                  <option value="">Select a player to add...</option>
+                </select>
+                <button onclick="addPlayerToSession()" class="primary-btn">Add to Session</button>
+              </div>
+            </div>
+            <div class="players-status">
+              <div class="playing-section">
+                <h4>Currently Playing (4)</h4>
+                <div id="playing-players" class="playing-players-grid"></div>
+              </div>
+              <div class="waiting-section">
+                <h4>Waiting to Play</h4>
+                <div id="waiting-players" class="waiting-players-grid"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="game-section">
+            <h3>Current Game</h3>
+            <div class="game-timer">
+              <span id="game-time">00:00</span>
+              <div class="timer-controls">
+                <button onclick="startGameTimer()" id="game-start-btn" class="timer-btn">▶️ Start</button>
+                <button onclick="pauseGameTimer()" id="game-pause-btn" class="timer-btn paused" style="display: none;">⏸️ Pause</button>
+                <button onclick="resetGameTimer()" class="timer-btn">🔄 Reset</button>
+              </div>
+            </div>
+            <div class="team-selection">
+              <div class="team-container">
+                <h4>Team 1</h4>
+                <div id="team1-players" class="team-players"></div>
+              </div>
+              <div class="vs-divider">VS</div>
+              <div class="team-container">
+                <h4>Team 2</h4>
+                <div id="team2-players" class="team-players"></div>
+              </div>
+            </div>
+            
+            <!-- Scoring System -->
+            <div class="scoring-section">
+              <h4>Game Scoring</h4>
+              <div class="score-display">
+                <div class="team-score">
+                  <h4>Team 1</h4>
+                  <div class="score-value" id="team1-display-score">0</div>
+                </div>
+                <div class="team-score">
+                  <h4>Team 2</h4>
+                  <div class="score-value" id="team2-display-score">0</div>
+                </div>
+              </div>
+              <div class="scoring-buttons">
+                <button onclick="addScoreToTeam(1, 1)" class="score-btn">+1 Team 1</button>
+                <button onclick="addScoreToTeam(2, 1)" class="score-btn">+1 Team 2</button>
+                <button onclick="resetGameScores()" class="score-btn">Reset Scores</button>
+              </div>
+            </div>
+            
+            <div class="game-actions">
+              <button onclick="makeRandomTeams()" class="success-btn">🎲 Random Teams</button>
+              <button onclick="showTeamAssignmentModal()" class="primary-btn">⚙️ Customize Teams</button>
+              <button onclick="endGame()" class="secondary-btn">End Game</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="session-stats-section">
+          <h3>Session Statistics</h3>
+          <div id="session-stats" class="stats-grid"></div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Edit Player Modal -->
+    <div id="edit-modal" class="modal hidden">
+      <div class="modal-content">
+        <h3>Edit Player</h3>
+        <div class="edit-form">
+          <div class="form-group">
+            <label for="edit-player-name">Player Name:</label>
+            <input type="text" id="edit-player-name" placeholder="Player name" />
+          </div>
+          <div class="form-group">
+            <label for="edit-player-wins">All-Time Wins:</label>
+            <input type="number" id="edit-player-wins" min="0" placeholder="0" />
+          </div>
+          <div class="form-group">
+            <label for="edit-player-games">All-Time Games:</label>
+            <input type="number" id="edit-player-games" min="0" placeholder="0" />
+          </div>
+        </div>
+        <div class="modal-buttons">
+          <button onclick="savePlayerEdit()" class="primary-btn">Save</button>
+          <button onclick="closeEditModal()" class="secondary-btn">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Game Result Modal -->
+    <div id="game-result-modal" class="modal hidden">
+      <div class="modal-content">
+        <h3>Game Result</h3>
+        <div class="game-result-form">
+          <div class="team-result">
+            <h4 id="team1-display">Team 1</h4>
+            <div class="score-input">
+              <input type="number" id="team1-score" min="0" max="21" placeholder="Score" />
+            </div>
+          </div>
+          <div class="vs-display">VS</div>
+          <div class="team-result">
+            <h4 id="team2-display">Team 2</h4>
+            <div class="score-input">
+              <input type="number" id="team2-score" min="0" max="21" placeholder="Score" />
+            </div>
+          </div>
+        </div>
+        <div class="modal-buttons">
+          <button onclick="saveGameResult()" class="primary-btn">Save Result</button>
+          <button onclick="closeGameResultModal()" class="secondary-btn">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rotation Modal -->
+    <div id="rotation-modal" class="modal hidden">
+      <div class="modal-content">
+        <h3>Player Rotation</h3>
+        <div class="rotation-info">
+          <p>Select who should go out and who should come in:</p>
+        </div>
+        <div class="rotation-selection">
+          <div class="rotation-section">
+            <h4>Going Out (Select 2)</h4>
+            <div id="going-out-players" class="rotation-players"></div>
+          </div>
+          <div class="rotation-section">
+            <h4>Coming In (Select 2)</h4>
+            <div id="coming-in-players" class="rotation-players"></div>
+          </div>
+        </div>
+        <div class="modal-buttons">
+          <button onclick="confirmRotation()" class="primary-btn">Confirm Rotation</button>
+          <button onclick="goBackToFairPlay()" class="secondary-btn">← Back</button>
+          <button onclick="closeRotationModal()" class="secondary-btn">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fair Play Rotation Modal -->
+    <div id="fairplay-modal" class="modal hidden">
+      <div class="modal-content">
+        <h3>Fair Play Rotation Suggestion</h3>
+        <div id="fairplay-suggestion"></div>
+        <div class="modal-buttons">
+          <button onclick="applyFairPlayRotation()" class="primary-btn">Apply Suggestion</button>
+          <button onclick="closeFairPlayModal()" class="secondary-btn">Cancel</button>
+          <button onclick="showManualRotationModal()" class="secondary-btn">Customize Manually</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Team Assignment Modal -->
+    <div id="team-assignment-modal" class="modal hidden">
+      <div class="modal-content">
+        <h3>Customize Teams</h3>
+        <div id="team-assignment-form">
+          <!-- Dynamic player assignment UI will be rendered here -->
+        </div>
+        <div class="modal-buttons">
+          <button onclick="saveTeamAssignment()" class="primary-btn">Save Teams</button>
+          <button onclick="closeTeamAssignmentModal()" class="secondary-btn">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
